@@ -82,7 +82,7 @@ def check_for_decimals(obj):
     raise TypeError
 
 def getGeoJson():
-    request_params = dict(cty='nepaRiver')
+    request_params = dict(cty='nepal')
     request_headers = dict(Authorization='Token 93eae5155d3c551cd5d449e896cf707869b63eb2')
     res = requests.get('http://tethys.icimod.org/apps/apicenter/hiwatAPI/getFeaturesHIWAT', params=request_params,headers=request_headers)
     # print (res.text)

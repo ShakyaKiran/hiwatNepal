@@ -13,7 +13,7 @@ class Hiwatnepal(TethysAppBase):
     root_url = 'hiwatnepal'
     color = '#8e44ad'
     description = 'Place a brief description of your app here.'
-    tags = ''
+    tags = 'HIWAT'
     enable_feedback = False
     feedback_emails = []
 

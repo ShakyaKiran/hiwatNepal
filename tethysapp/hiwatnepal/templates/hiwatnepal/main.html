@@ -66,8 +66,9 @@
 									<div id="layerDiv" style="padding:10px">
 										<ul id="layerControl" class="layerControl">
                                             <li><input id="chkoutline" type="checkbox" value="outline" checked=""><label for="chkoutline">Outline</label></li>
-                                            <!--<li><input id="chksub_basin" type="checkbox" value="sub_basin"><label for="chksub_basin">Province</label></li>-->
+                                            <li><input id="chksub_basin" type="checkbox" value="sub_basin"><label for="chksub_basin">Province</label></li>
                                             <li><input id="chkbasin" type="checkbox" value="basin"><label for="chkbasin">District</label></li>
+                                            <li><input id="chklabel" type="checkbox" value="label"><label for="chklabel">River Names</label></li>
                                         </ul>
 									</div>
 								</div>
@@ -94,7 +95,7 @@
 							<div class="panel-body" style="height:calc(100% -  40px);overflow:auto;">
 								<div style="text-align:justify;">
 									<b>Description:</b><br>
-									The Streamflow prediction application is the collection of river network created within specific countries which has the unique ID which then is connected to the database to have the 15-day forecast. The user can interact by clicking this river network. This application can be a part of a DSS tool for flood forecasting and give an early warning system to the user.
+									The Streamflow prediction application is the collection of river network created within specific countries which has the unique ID which then is connected to the database to have the 48-hours forecast. The user can interact by clicking this river network. This application can be a part of a DSS tool for flood forecasting and give an early warning system to the user.
 								</div>
 								<div class="form-group" style="margin-top:5px;">
 									<a href="#" data-toggle="modal" data-target="#aboutModal"><span style="font-weight:bold;">View More...</span></a>
@@ -127,11 +128,15 @@
 					<div style="overflow:auto;height:calc(100% - 80px);padding:6px;">
                         <h5><b class="info">Description</b></h5>
                         <p class="info">
-                        The Streamflow prediction application is the collection of river network created within specific countries which has the unique ID which then is connected to the database to have the 15-day forecast. The user can interact by clicking this river network. This application can be a part of a DSS tool for flood forecasting and give an early warning system to the user.
+                        The Streamflow prediction application is the collection of river network created within specific countries which has the unique ID
+                            which then is connected to the database to have the 48-hours forecast. The user can interact by clicking this river network.
+                            This application can be a part of a DSS tool for flood forecasting and give an early warning system to the user.
                         </pinfo>
                         <h5><b class="info">Data /methodology/platform</b></h5>
                         <p class="info">
-                        The Streamflow Prediction Tool provides 15-day streamflow predicted estimates by using the European Center for Medium Range Weather Forecasts (ECMWF) runoff predictions routed with the RAPID program. The connection between the predicted and hind casted runoff are generated with GIS tools both from ESRI as well as from open source contributions.  The Streamflow Prediction Tool was developed at Brigham Young University with support from the National Science Foundation (NSF).
+                        The Streamflow Prediction Tool provides 48-hours streamflow predicted estimates by using the  High-Impact Weather Assesment Toolkit (HIWAT)
+                            runoff predictions routed with the RAPID program.  The application displays only results from rivers that are not transboundary. The app
+                            also provides historical data, and the ability to download the forecast and historical data.
                         </p>
                         <p class="info">
                         On the other hand Tethys platform is the open-source web-GIS suit developed by Brigham Young University (BYU).  Tethys comes with few widely used GIS technologies like GeoServer and PostGIS and is developed in the python Django environment.
@@ -141,14 +146,8 @@
                         The Streamflow prediction application provides the forecast data where, the user can interact with the application on following ways:
                         </p>
                         <ul>
-                            <li class="info">Upon clicking any river line, a user can view the forecast data with following parameters</li>
-                            <ul>
-                                <li class="info">High-Resolution forecast (10 days)</li>
-                                <li class="info">Standard Deviation, Mean, Maximum and Minimum forecast (generated with 52 ensemble forecasts)</li>
-                                <li class="info">Information on two, ten and twenty years return period.</li>
-                            </ul>
+                            <li class="info">Upon clicking any river line, a user can view the forecast data for next 48-hours.</li>
                             <li class="info">View the historical dataset from 1980.</li>
-                            <li class="info">A chart of flow-duration</li>
                             <!--<li class="info">Download the dataset</li>-->
                             <ul>
                                 <li class="info">Forecast data</li>
@@ -188,7 +187,8 @@
             <ul class="nav nav-tabs" role="tablist" id="graphTab">
               <li role="presentation" class="active"><a id="forecast_tab_link" href="#forecast_tab" aria-controls="forecast_tab" role="tab" data-toggle="tab">Forecast</a></li>
               <li role="presentation"><a id="historical_tab_link" href="#historical" aria-controls="historical" role="tab" data-toggle="tab">Historical</a></li>
-              <li role="presentation"><a id="flow_duration_tab_link" href="#flow_duration" aria-controls="flow_duration" role="tab" data-toggle="tab">Flow-Duration</a></li>
+              <!--<li role="presentation"><a id="flow_duration_tab_link" href="#flow_duration" aria-controls="flow_duration" role="tab" data-toggle="tab">Flow-Duration</a></li>-->
+              <!--<li role="presentation"><a href="#download" aria-controls="download" role="tab" data-toggle="tab">Download</a></li>-->
               <!--<li role="presentation"><a href="#download" aria-controls="download" role="tab" data-toggle="tab">Download</a></li>-->
             </ul>
 
@@ -268,23 +268,12 @@
 					return 'blue'
 				}
 			}
-			function ecmwfStyle(feature){
-				if (feature.properties.risk < 1){
+            function ecmwfStyle(feature){
 					return{
-					weight: 2,
-					opacity: 1,
-					color:  getRisk(feature.properties.risk),
-					fillOpacity:1
+					weight: 4,
+					opacity: 0,
+					fillOpacity:0
 					}
-				}
-				else {
-					return{
-					weight: 5,
-					opacity: 1,
-					color:  getRisk(feature.properties.risk),
-					fillOpacity:1
-					}
-				}
 			}
 			var map = L.map('map').setView([27.732160709580906,85.341796875],7);
 			var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -309,9 +298,40 @@
                 transparent: true
             });
 
+            var hiwatRiverColor = new L.tileLayer.wms('http://tethys.icimod.org:8181/geoserver/ows',{
+			    layers:'hydroviewer:rivernepal',
+                format:'image/png',
+                transparent: true,
+                styles: 'nepalHiresColor'
+            }).addTo(map);
+
+            var hiwatRiver = new L.tileLayer.wms('http://tethys.icimod.org:8181/geoserver/ows',{
+			    layers:'hydroviewer:rivernepal',
+                format:'image/png',
+                transparent: true
+            });
+
             // ecmwfWMS.on("click", function (event){
 			 //    alert("me clicked");
             // }
+
+            // map.on('zoomend', function() {
+            // if (map.getZoom() <10){
+            //     if (map.hasLayer(hiwatRiver)) {
+            //         map.removeLayer(hiwatRiver);
+            //     } else {
+            //         console.log("no point layer active");
+            //     }
+            // }
+            // if (map.getZoom() >= 10){
+            //     if (map.hasLayer(hiwatRiver)){
+            //         console.log("layer already added");
+            //     } else {
+            //         map.addLayer(hiwatRiver);
+            //     }
+            // }
+            // });
+
             $('#chkoutline').change(function(){
                 if($(this).is(':checked'))
                     map.addLayer(ecmwfAdmin);
@@ -319,7 +339,6 @@
                 else
                     map.removeLayer(ecmwfAdmin);
             })
-
             $('#chkbasin').change(function(){
                 if($(this).is(':checked'))
                     map.addLayer(ecmwfDist);
@@ -327,6 +346,15 @@
                 else
                     map.removeLayer(ecmwfDist);
             })
+
+            $('#chklabel').change(function(){
+                if($(this).is(':checked'))
+                    map.addLayer(hiwatRiver);
+
+                else
+                    map.removeLayer(hiwatRiver);
+            })
+
             $('#chksub_basin').change(function(){
                 if($(this).is(':checked'))
                     map.addLayer(ecmwfProv);
@@ -337,216 +365,207 @@
 
 
 			var ecmwfLayer = L.geoJson(ecmwfData,
-				{style: ecmwfStyle,
-				onEachFeature: function(feature, layer) {
-					if (feature.properties && feature.properties.comid) {
-						layer.on('click', function (e) {
-						    $.ajax({
-								type:"GET",
-								data: {
-									"stID": feature.properties.comid,
-								},
-								url:"chartHiwat",
-								dataType: 'json',
-								"beforeSend": function(xhr, settings) {
-									console.log("Before Send");
-									$.ajaxSettings.beforeSend(xhr, settings);
-								},
-								"success": function (data) {
- 									$('#long-term-chart').empty();
-                                    $('#historical-chart').empty();
-                                    $('#fdc-chart').empty();
-								    json_response = data;
-								    var dates = [];
-                					var values = [];
-                                    // var hres_dates = [];
-                                    // var hres_values = [];
-                                    // var min_values = [];
-                                    // var max_values = [];
-                                    // var std_dev_lower_values = [];
-                                    // var std_dev_upper_values = [];
-                                    //
-                                    // var sorted_daily_avg = [];
-                                    // var prob = [];
-                                    //
-                                    var hdate= []
-                                    var hval = []
+                {
+                    style: ecmwfStyle,
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.comid) {
+                            layer.on('click', function (e) {
+                                $.ajax({
+                                    type: "GET",
+                                    data: {
+                                        "stID": feature.properties.comid,
+                                    },
+                                    url: "chartHiwat",
+                                    dataType: 'json',
+                                    "beforeSend": function (xhr, settings) {
+                                        console.log("Before Send");
+                                        $.ajaxSettings.beforeSend(xhr, settings);
+                                    },
+                                    "success": function (data) {
+                                        $('#long-term-chart').empty();
+                                        $('#historical-chart').empty();
+                                        $('#fdc-chart').empty();
+                                        json_response = data;
+                                        var dates = [];
+                                        var values = [];
+                                        var hdate = []
+                                        var hval = []
 
-									// get_forecast_percent(feature.properties.comid);
+                                        // get_forecast_percent(feature.properties.comid);
 
-									if (json_response.success == "success")
-                						{
-                						    json_response.dates.forEach(function (element) {
-											    dates.push(element);
-											});
-											for (i in json_response.values) {
-												values.push(parseFloat(json_response.values[i]));
-											}
-											// for (i in json_response.hres_dates) {
-											// 	hres_dates.push(json_response.hres_dates[i]);
-											// }
-											// for (i in json_response.hres_values) {
-											// 	hres_values.push(parseFloat(json_response.hres_values[i]));
-											// }
-											// for (i in json_response.min_values) {
-											// 	min_values.push(parseFloat(json_response.min_values[i]));
-											// }
-											// for (i in json_response.max_values) {
-											// 	max_values.push(parseFloat(json_response.max_values[i]));
-											// }
-											// for (i in json_response.std_dev_lower_values) {
-											// 	std_dev_lower_values.push(parseFloat(json_response.std_dev_lower_values[i]));
-											// }
-											// for (i in json_response.std_dev_upper_values) {
-											// 	std_dev_upper_values.push(parseFloat(json_response.std_dev_upper_values[i]));
-											// }
-											for (i in json_response.hval) {
-												hval.push(parseFloat(json_response.hval[i]));
-											}
-											for (i in json_response.hdate) {
-												hdate.push(json_response.hdate[i]);
-											}
+                                        if (json_response.success == "success") {
+                                            json_response.dates.forEach(function (element) {
+                                                dates.push(element);
+                                            });
+                                            for (i in json_response.values) {
+                                                values.push(parseFloat(json_response.values[i]));
+                                            }
+                                            // for (i in json_response.hres_dates) {
+                                            // 	hres_dates.push(json_response.hres_dates[i]);
+                                            // }
+                                            // for (i in json_response.hres_values) {
+                                            // 	hres_values.push(parseFloat(json_response.hres_values[i]));
+                                            // }
+                                            // for (i in json_response.min_values) {
+                                            // 	min_values.push(parseFloat(json_response.min_values[i]));
+                                            // }
+                                            // for (i in json_response.max_values) {
+                                            // 	max_values.push(parseFloat(json_response.max_values[i]));
+                                            // }
+                                            // for (i in json_response.std_dev_lower_values) {
+                                            // 	std_dev_lower_values.push(parseFloat(json_response.std_dev_lower_values[i]));
+                                            // }
+                                            // for (i in json_response.std_dev_upper_values) {
+                                            // 	std_dev_upper_values.push(parseFloat(json_response.std_dev_upper_values[i]));
+                                            // }
+                                            for (i in json_response.hval) {
+                                                hval.push(parseFloat(json_response.hval[i]));
+                                            }
+                                            for (i in json_response.hdate) {
+                                                hdate.push(json_response.hdate[i]);
+                                            }
                                             //
-											// for (i in json_response.prob) {
-											// 	prob.push(json_response.prob[i]);
-											// }
-											// for (i in json_response.sorted_daily_avg) {
-											// 	sorted_daily_avg.push(json_response.sorted_daily_avg[i]);
-											// }
-										}
-									var avg_series = {
-									    	name:'Forecast Values',
-											x: dates,
-											y: values,
-											type: 'scatter',
-											line: {
-											  color: 'blue',
-											  width: 2
-											}
-										};
-									var layout1 = {
-									  title: 'Forecast',
-                                      autosize:true,
-									  xaxis: {
-									      title : 'Dates',
-										},
-									  yaxis: {
-									      title : 'Streamflow',
-										  range: [ 0,  json_response.range]
-										},
-									};
-									var data = [avg_series];
-
-                                    var hplot_series={
-									    name:'ERA_Interim',
-                                        x:hdate,
-                                        y:hval,
-                                        type: 'scatter'
-                                        };
-                                    //
-                                    // // Annotation variables
-                                    var anMax = "Max: "+ Math.round(json_response.return_max * 100) / 100;
-                                    var an20 = "20-yr: "+ Math.round(json_response.return_20 * 100) / 100;
-                                    var an10 = "10-yr: "+ Math.round(json_response.return_10 * 100) / 100;
-                                    var an2 = "2-yr: "+ Math.round(json_response.return_max * 100) / 100;
-                                    var anX = json_response.datetime_end;
-                                    //
-                                    var annotation_series={
-                                        x: [anX,anX,anX,anX],
-										y: [json_response.return_max, json_response.return_20, json_response.return_10, json_response.return_2],
-										text: [anMax, an20, an10, an2],
-										mode: 'text',
-										textposition: 'right',
-                                    };
-                                    //
-                                    var layout2={
-									    title: "Historical Streamflow",
-                                        autoSize: true,
-										showlegend: false,
-										shapes:[{
-                                            type: 'rect',
-                                            xref: 'x',
-                                            yref: 'y',
-                                            x0: json_response.datetime_start,
-                                            y0: json_response.return_20,
-                                            x1: json_response.datetime_end,
-                                            y1: json_response.return_max,
-                                            line: {
-                                                width: 0
-                                            },
-                                            fillcolor: 'rgba(128, 0, 128, 0.4)'
-                                        },
-										{
-                                            type: 'rect',
-                                            xref: 'x',
-                                            yref: 'y',
-                                            x0: json_response.datetime_start,
-                                            y0: json_response.return_10,
-                                            x1: json_response.datetime_end,
-                                            y1: json_response.return_20,
-                                            line: {
-                                                width: 0
-                                            },
-                                            fillcolor: 'rgba(255, 0, 0, 0.4)'
-                                        },
-										{
-                                            type: 'rect',
-                                            xref: 'x',
-                                            yref: 'y',
-                                            x0: json_response.datetime_start,
-                                            y0: json_response.return_2,
-                                            x1: json_response.datetime_end,
-                                            y1: json_response.return_10,
-                                            line: {
-                                                width: 0
-                                            },
-                                            fillcolor: 'rgba(255, 255, 0, 0.4)'
-                                        },],
-                                        xaxis: {
-									        title: 'Dates',
-                                        },
-                                        yaxis: {
-									        title: 'Streamflow'
+                                            // for (i in json_response.prob) {
+                                            // 	prob.push(json_response.prob[i]);
+                                            // }
+                                            // for (i in json_response.sorted_daily_avg) {
+                                            // 	sorted_daily_avg.push(json_response.sorted_daily_avg[i]);
+                                            // }
                                         }
-                                    };
-                                    var hdata = [hplot_series,annotation_series];
+                                        var avg_series = {
+                                            name: 'Forecast Values',
+                                            x: dates,
+                                            y: values,
+                                            type: 'scatter',
+                                            line: {
+                                                color: 'blue',
+                                                width: 2
+                                            }
+                                        };
+                                        var layout1 = {
+                                            title: 'Forecast',
+                                            autosize: true,
+                                            xaxis: {
+                                                title: 'Dates',
+                                            },
+                                            yaxis: {
+                                                title: 'Streamflow',
+                                                range: [0, json_response.range]
+                                            },
+                                        };
+                                        var data = [avg_series];
 
-                                    $('#graph').on('shown.bs.modal',function(){
-									    Plotly.newPlot('long-term-chart', data, layout1);
-									    Plotly.newPlot('historical-chart', hdata, layout2);
-									    // Plotly.newPlot('fdc-chart', fdata, layout3);
-                                     });
-                                    $('#graphTab a').on('shown.bs.tab',function(e){
-                                        var id=$(this).attr('id');
+                                        var hplot_series = {
+                                            name: 'ERA_Interim',
+                                            x: hdate,
+                                            y: hval,
+                                            type: 'scatter'
+                                        };
+                                        //
+                                        // // Annotation variables
+                                        var anMax = "Max: " + Math.round(json_response.return_max * 100) / 100;
+                                        var an20 = "20-yr: " + Math.round(json_response.return_20 * 100) / 100;
+                                        var an10 = "10-yr: " + Math.round(json_response.return_10 * 100) / 100;
+                                        var an2 = "2-yr: " + Math.round(json_response.return_max * 100) / 100;
+                                        var anX = json_response.datetime_end;
+                                        //
+                                        var annotation_series = {
+                                            x: [anX, anX, anX, anX],
+                                            y: [json_response.return_max, json_response.return_20, json_response.return_10, json_response.return_2],
+                                            text: [anMax, an20, an10, an2],
+                                            mode: 'text',
+                                            textposition: 'right',
+                                        };
+                                        //
+                                        var layout2 = {
+                                            title: "Historical Streamflow",
+                                            autoSize: true,
+                                            showlegend: false,
+                                            shapes: [{
+                                                type: 'rect',
+                                                xref: 'x',
+                                                yref: 'y',
+                                                x0: json_response.datetime_start,
+                                                y0: json_response.return_20,
+                                                x1: json_response.datetime_end,
+                                                y1: json_response.return_max,
+                                                line: {
+                                                    width: 0
+                                                },
+                                                fillcolor: 'rgba(128, 0, 128, 0.4)'
+                                            },
+                                                {
+                                                    type: 'rect',
+                                                    xref: 'x',
+                                                    yref: 'y',
+                                                    x0: json_response.datetime_start,
+                                                    y0: json_response.return_10,
+                                                    x1: json_response.datetime_end,
+                                                    y1: json_response.return_20,
+                                                    line: {
+                                                        width: 0
+                                                    },
+                                                    fillcolor: 'rgba(255, 0, 0, 0.4)'
+                                                },
+                                                {
+                                                    type: 'rect',
+                                                    xref: 'x',
+                                                    yref: 'y',
+                                                    x0: json_response.datetime_start,
+                                                    y0: json_response.return_2,
+                                                    x1: json_response.datetime_end,
+                                                    y1: json_response.return_10,
+                                                    line: {
+                                                        width: 0
+                                                    },
+                                                    fillcolor: 'rgba(255, 255, 0, 0.4)'
+                                                },],
+                                            xaxis: {
+                                                title: 'Dates',
+                                            },
+                                            yaxis: {
+                                                title: 'Streamflow'
+                                            }
+                                        };
+                                        var hdata = [hplot_series, annotation_series];
 
-                                        if(id=='forecast_tab_link'){
-                                             Plotly.newPlot('long-term-chart', data, layout1);
-										}
-										else if(id == 'historical_tab_link'){
+                                        $('#graph').on('shown.bs.modal', function () {
+                                            Plotly.newPlot('long-term-chart', data, layout1);
                                             Plotly.newPlot('historical-chart', hdata, layout2);
-										}
-										else if(id == 'flow_duration_tab_link'){
-                                            Plotly.newPlot('fdc-chart', fdata, layout3);
-										}
-                                    })
-                                    // $('#historical_tab_link').click(function () {
-                                    //     Plotly.newPlot('historical-chart', hdata, layout2);
-                                    // })
-                                    //
-                                    $('#graph').modal('show');
+                                            // Plotly.newPlot('fdc-chart', fdata, layout3);
+                                        });
+                                        $('#graphTab a').on('shown.bs.tab', function (e) {
+                                            var id = $(this).attr('id');
 
-								},
-                                "error": function(data) {
-                                  alert("Return Error: " + data.status);
-                                  alert(data.responseJSON.error);
-                                }
-							})
-						});  //Layer on click
-					}
-				}
-				}).addTo(map);
+                                            if (id == 'forecast_tab_link') {
+                                                Plotly.newPlot('long-term-chart', data, layout1);
+                                            }
+                                            else if (id == 'historical_tab_link') {
+                                                Plotly.newPlot('historical-chart', hdata, layout2);
+                                            }
+                                            else if (id == 'flow_duration_tab_link') {
+                                                Plotly.newPlot('fdc-chart', fdata, layout3);
+                                            }
+                                        })
+                                        // $('#historical_tab_link').click(function () {
+                                        //     Plotly.newPlot('historical-chart', hdata, layout2);
+                                        // })
+                                        //
+                                        $('#graph').modal('show');
 
-			map.fitBounds(ecmwfLayer.getBounds());
+                                    },
+                                    "error": function (data) {
+                                        alert("Return Error: " + data.status);
+                                        alert(data.responseJSON.error);
+                                    }
+                                })
+                            });  //Layer on click
+                        }
+                    }
+                // });
+                }).addTo(map);
+
+            map.fitBounds(ecmwfLayer.getBounds());
 			var legend = L.control({position: 'bottomleft'});
 			legend.onAdd = function (map) {
 				var div = L.DomUtil.create('div','legend');
